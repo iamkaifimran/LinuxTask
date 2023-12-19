@@ -1,0 +1,126 @@
+#!/bin/bash
+
+# Function to get CPU information
+get_cpu_info() {
+    lscpu
+}
+
+# Function to get memory information
+get_memory_info() {
+    free
+}
+
+# Function to create a new user
+create_user() {
+    if [ -z "$1" ]; then
+        echo "Error: Missing username. Usage: internsctl user create <username>"
+        exit 1
+    fi
+
+    sudo useradd -m -s /bin/bash "$1"
+    sudo passwd "$1"
+}
+
+# Function to list all regular users
+list_users() {
+    cut -d: -f1 /etc/passwd
+}
+
+# Function to list users with sudo permissions
+list_sudo_users() {
+    getent group sudo | cut -d: -f4 | tr ',' '\n'
+}
+
+# Function to get file information
+get_file_info() {
+    if [ -z "$1" ]; then
+        echo "Error: Missing filename. Usage: internsctl file getinfo <file-name>"
+        exit 1
+    fi
+
+    file="$1"
+    size=$(stat -c%s "$file")
+    permissions=$(stat -c%a "$file")
+    owner=$(stat -c%U "$file")
+    last_modified=$(stat -c%y "$file")
+
+    printf "File: %s\n" "$file"
+    printf "Access: %s\n" "$permissions"
+    printf "Size(B): %d\n" "$size"
+    printf "Owner: %s\n" "$owner"
+    printf "Modify: %s\n" "$last_modified"
+}
+
+# Function to get specific file information
+get_file_info_options() {
+    file="$1"
+    shift
+
+    while [ "$#" -gt 0 ]; do
+        case "$1" in
+            --size | -s)
+                stat -c%s "$file"
+                ;;
+            --permissions | -p)
+                stat -c%a "$file"
+                ;;
+            --owner | -o)
+                stat -c%U "$file"
+                ;;
+            --last-modified | -m)
+                stat -c%y "$file"
+                ;;
+            *)
+                echo "Error: Unknown option '$1'"
+                exit 1
+                ;;
+        esac
+        shift
+    done
+}
+
+# Parse command-line options
+case "$1" in
+    cpu)
+        get_cpu_info
+        ;;
+    memory)
+        get_memory_info
+        ;;
+    user)
+        case "$2" in
+            create)
+                create_user "$3"
+                ;;
+            list)
+                if [ "$3" == "--sudo-only" ]; then
+                    list_sudo_users
+                else
+                    list_users
+                fi
+                ;;
+            *)
+                echo "Error: Unknown subcommand '$2'. Usage: internsctl user [create|list]"
+                exit 1
+                ;;
+        esac
+        ;;
+    file)
+        case "$2" in
+            getinfo)
+                shift
+                get_file_info_options "$@"
+                ;;
+            *)
+                echo "Error: Unknown subcommand '$2'. Usage: internsctl file getinfo [options] <file-name>"
+                exit 1
+                ;;
+        esac
+        ;;
+    *)
+        echo "Error: Unknown command '$1'. Usage: internsctl [cpu|memory|user|file] <subcommand>"
+        exit 1
+        ;;
+esac
+
+exit 0

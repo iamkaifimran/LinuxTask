@@ -1,0 +1,77 @@
+#!/bin/bash
+
+# Define the version
+VERSION="v0.1.0"
+
+# Function to display manual page
+show_manual() {
+    cat <<EOF
+internsctl(1)                                                              User Commands                                                              internsctl(1)
+
+NAME
+       internsctl - Custom Linux command for operations
+
+SYNOPSIS
+       internsctl [OPTION]...
+
+DESCRIPTION
+       internsctl is a custom Linux command designed for specific operations.
+
+OPTIONS
+       --help
+              Display this help message and exit.
+
+       --version
+              Display version information.
+
+EXAMPLES
+       internsctl [OPTIONS]...
+
+AUTHOR
+       Your Name
+
+BUGS
+       Report bugs to your-email@example.com
+
+COPYRIGHT
+       This is free software: you are free to change and redistribute it. There is NO WARRANTY, to the extent permitted by law.
+
+SEE ALSO
+       Any related commands and resources.
+
+VERSION
+       $VERSION
+
+EOF
+}
+
+# Function to display help message
+show_help() {
+    cat <<EOF
+Usage: internsctl [OPTIONS]...
+
+Options:
+  --help        Display this help message.
+  --version     Display version information.
+
+Examples:
+  internsctl [OPTIONS]...
+
+EOF
+}
+
+# Parse command-line options
+case "$1" in
+    --help)
+        show_help
+        ;;
+    --version)
+        echo "internsctl $VERSION"
+        ;;
+    *)
+        echo "Error: Unknown option. Use 'internsctl --help' for usage."
+        exit 1
+        ;;
+esac
+
+exit 0
